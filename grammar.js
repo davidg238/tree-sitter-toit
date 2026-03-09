@@ -1,6 +1,8 @@
 module.exports = grammar({
   name: "toit",
   externals: ($) => [$._indent, $._dedent, $._newline, $._error_sentinel],
+  extras: ($) => [/[ \t\f\r\v\uFEFF\u2060\u200B]/, $.comment],
+  word: ($) => $.identifier,
   conflicts: ($) => [
     [
       $.field_declaration,
@@ -13,16 +15,22 @@ module.exports = grammar({
     [$.block, $.binary_expression],
     [$.function_definition, $.function_call, $._primary_expression],
     [$.function_definition, $.function_call],
+    [$.if_statement, $.function_call],
+    [$.while_statement, $.function_call],
+    [$.for_statement, $.function_call],
     [$.field_declaration, $._expression],
-    [$.binary_expression, $.function_call],
+    [$.binary_expression, $.function_call, $.block_function_call],
     [$._statement, $._expression],
-    [$.function_call, $._expression],
+    [$.function_call, $.block_function_call, $._expression],
     [$.parameter, $._primary_expression],
     [$._expression, $.parameter],
     [$._statement],
     [$.member_access, $.function_call],
     [$.variable_declaration, $.assignment],
+    [$.function_call, $.block_function_call, $._primary_expression],
     [$.function_call, $._primary_expression],
+    [$.block_function_call, $._primary_expression],
+    [$.function_call, $.block_function_call],
   ],
   rules: {
     source_file: ($) => repeat(choice($._definition, $._newline)),
@@ -33,7 +41,6 @@ module.exports = grammar({
         $.class_definition,
         prec(3, $.function_definition),
         $.variable_declaration,
-        $.comment,
       ),
 
     import_statement: ($) =>
@@ -90,7 +97,7 @@ module.exports = grammar({
             prec(13, $.assignment),
             $.return_statement,
             $.function_call,
-            $.comment,
+            $.block_function_call,
           ),
           $._newline,
         ),
@@ -114,7 +121,7 @@ module.exports = grammar({
           choice($.identifier, $.member_access, $.parenthesized_expression),
         ),
         alias(choice(":=", "::="), $.operator),
-        field("right", $._expression),
+        field("right", choice($._expression, $.block_function_call)),
       ),
 
     assignment: ($) =>
@@ -141,11 +148,11 @@ module.exports = grammar({
             ),
             $.operator,
           ),
-          field("right", $._expression),
+          field("right", choice($._expression, $.block_function_call)),
         ),
       ),
 
-    return_statement: ($) => seq("return", optional($._expression)),
+    return_statement: ($) => seq("return", optional(choice($._expression, $.block_function_call))),
 
     if_statement: ($) =>
       prec.right(
@@ -153,7 +160,7 @@ module.exports = grammar({
         seq(
           "if",
           field("condition", $._expression),
-          ":",
+          prec(10, ":"),
           choice(
             seq($._indent, repeat1($._statement), $._dedent),
             $._statement,
@@ -161,7 +168,7 @@ module.exports = grammar({
           optional(
             seq(
               "else",
-              ":",
+              prec(10, ":"),
               choice(
                 seq($._indent, repeat1($._statement), $._dedent),
                 $._statement,
@@ -177,7 +184,7 @@ module.exports = grammar({
         seq(
           "while",
           $._expression,
-          ":",
+          prec(10, ":"),
           choice(
             seq($._indent, repeat1($._statement), $._dedent),
             $._statement,
@@ -195,7 +202,7 @@ module.exports = grammar({
           optional($._expression),
           ";",
           optional(choice($.assignment, $.function_call)),
-          ":",
+          prec(10, ":"),
           choice(
             seq($._indent, repeat1($._statement), $._dedent),
             $._statement,
@@ -209,27 +216,43 @@ module.exports = grammar({
         seq(
           field("function", choice($.identifier, $.member_access)),
           choice(
-            repeat(choice($._primary_expression, $.named_argument)),
+            repeat1(choice($._primary_expression, $.named_argument)),
             seq(
               $._indent,
               repeat1(choice($._primary_expression, $.named_argument, $._newline)),
               $._dedent,
-            ),
-          ),
+            )
+          )
+        )
+      ),
+
+    block_function_call: ($) =>
+      prec.left(
+        2,
+        seq(
+          field("function", choice($.identifier, $.member_access)),
           optional(
             choice(
-              $.block,
-              $.double_colon_block,
-              seq($._indent, repeat1($._statement), $._dedent),
-            ),
+              repeat1(choice($._primary_expression, $.named_argument)),
+              seq(
+                $._indent,
+                repeat1(choice($._primary_expression, $.named_argument, $._newline)),
+                $._dedent,
+              )
+            )
           ),
-        ),
+          choice(
+            $.block,
+            $.double_colon_block,
+            seq($._indent, repeat1($._statement), $._dedent)
+          )
+        )
       ),
 
     named_argument: ($) =>
       prec.right(5, seq("--", field("name", $.identifier), optional(seq("=", $._expression)))),
 
-    double_colon_block: ($) => seq("::", $._expression),
+    double_colon_block: ($) => seq($._double_colon, $._expression),
 
     _expression: ($) =>
       choice(
@@ -282,7 +305,7 @@ module.exports = grammar({
         ),
       ),
 
-    parenthesized_expression: ($) => seq("(", $._expression, ")"),
+    parenthesized_expression: ($) => seq("(", choice($._expression, $.block_function_call), ")"),
 
     binary_expression: ($) => {
       const table = [
@@ -345,7 +368,7 @@ module.exports = grammar({
         token(seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/")),
       ),
 
-    // ATOMIC LEXICAL SOLDER: Setting priority to 100 prevents token fragmentation.
-    _assign_op: ($) => token(prec(100, choice(":=", "::="))),
+    _assign_op: ($) => choice(":=", "::="),
+    _double_colon: ($) => "::",
   },
 });

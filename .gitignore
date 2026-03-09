@@ -1,0 +1,12 @@
+node_modules/
+build/
+tree-sitter-toit.wasm
+*.log
+*.txt
+cst.txt
+out.txt
+output.txt
+parse_debug.txt
+failures.log
+debug.log
+.DS_Store

@@ -16,6 +16,7 @@ typedef struct {
   uint32_t capacity;
   uint16_t queued_dedent_count;
   bool eof_newline_emitted;
+  bool queued_newline;
 } Scanner;
 
 static void push_indent(Scanner *scanner, uint16_t indent) {
@@ -60,6 +61,10 @@ unsigned tree_sitter_toit_external_scanner_serialize(void *payload, char *buffer
   memcpy(buffer + i, &scanner->eof_newline_emitted, sizeof(bool));
   i += sizeof(bool);
 
+  if (i + sizeof(bool) > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) return i;
+  memcpy(buffer + i, &scanner->queued_newline, sizeof(bool));
+  i += sizeof(bool);
+
   for (size_t j = 1; j < scanner->length; ++j) {
     if (i + sizeof(uint16_t) > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) break;
     memcpy(buffer + i, &scanner->indent_stack[j], sizeof(uint16_t));
@@ -88,6 +93,13 @@ void tree_sitter_toit_external_scanner_deserialize(void *payload, const char *bu
     scanner->eof_newline_emitted = false;
   }
 
+  if (i + sizeof(bool) <= length) {
+    memcpy(&scanner->queued_newline, buffer + i, sizeof(bool));
+    i += sizeof(bool);
+  } else {
+    scanner->queued_newline = false;
+  }
+
   for (; i < length; i += sizeof(uint16_t)) {
     uint16_t indent;
     if (i + sizeof(uint16_t) > length) break;
@@ -104,10 +116,17 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
   Scanner *scanner = (Scanner *)payload;
   if (valid_symbols[ERROR_SENTINEL]) return false;
 
+  if (scanner->queued_newline && valid_symbols[NEWLINE]) {
+    scanner->queued_newline = false;
+    lexer->result_symbol = NEWLINE;
+    return true;
+  }
+
   if (scanner->queued_dedent_count > 0 && valid_symbols[DEDENT]) {
     scanner->queued_dedent_count--;
     pop_indent(scanner);
     lexer->result_symbol = DEDENT;
+    scanner->queued_newline = true;
     return true;
   }
 
@@ -170,6 +189,7 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
           scanner->queued_dedent_count = extra_dedents - 1;
           pop_indent(scanner);
           lexer->result_symbol = DEDENT;
+          scanner->queued_newline = true;
           return true;
         }
       }
