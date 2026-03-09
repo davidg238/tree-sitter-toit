@@ -78,20 +78,22 @@ module.exports = grammar({
       seq($.identifier, optional(seq("/", field("type", $.identifier)))),
 
     _statement: ($) =>
-      seq(
-        choice(
-          prec(15, $.field_declaration),
-          prec(14, $.variable_declaration),
-          prec(13, $.assignment),
-          $.return_statement,
-          $.if_statement,
-          $.while_statement,
-          $.for_statement,
-          prec(12, $.function_definition),
-          $.function_call,
-          $.comment,
+      choice(
+        $.if_statement,
+        $.while_statement,
+        $.for_statement,
+        prec(12, $.function_definition),
+        seq(
+          choice(
+            prec(15, $.field_declaration),
+            prec(14, $.variable_declaration),
+            prec(13, $.assignment),
+            $.return_statement,
+            $.function_call,
+            $.comment,
+          ),
+          $._newline,
         ),
-        choice($._newline, $._dedent, "\0"),
       ),
 
     field_declaration: ($) =>
@@ -106,16 +108,13 @@ module.exports = grammar({
       ),
 
     variable_declaration: ($) =>
-      prec(
-        16,
-        seq(
-          field(
-            "left",
-            choice($.identifier, $.member_access, $.parenthesized_expression),
-          ),
-          alias($._assign_op, $.operator),
-          field("right", $._expression),
+      seq(
+        field(
+          "left",
+          choice($.identifier, $.member_access, $.parenthesized_expression),
         ),
+        alias(choice(":=", "::="), $.operator),
+        field("right", $._expression),
       ),
 
     assignment: ($) =>
@@ -209,7 +208,14 @@ module.exports = grammar({
         2,
         seq(
           field("function", choice($.identifier, $.member_access)),
-          repeat(choice($._primary_expression, $.named_argument)),
+          choice(
+            repeat(choice($._primary_expression, $.named_argument)),
+            seq(
+              $._indent,
+              repeat1(choice($._primary_expression, $.named_argument, $._newline)),
+              $._dedent,
+            ),
+          ),
           optional(
             choice(
               $.block,
@@ -221,7 +227,7 @@ module.exports = grammar({
       ),
 
     named_argument: ($) =>
-      seq("--", field("name", $.identifier), optional(seq("=", $._expression))),
+      prec.right(5, seq("--", field("name", $.identifier), optional(seq("=", $._expression)))),
 
     double_colon_block: ($) => seq("::", $._expression),
 
