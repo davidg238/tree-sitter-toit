@@ -440,6 +440,21 @@
     }
   },
   {
+    "type": "export_declaration",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": true,
+      "required": false,
+      "types": [
+        {
+          "type": "identifier",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "field_declaration",
     "named": true,
     "fields": {
@@ -1157,6 +1172,10 @@
           "named": true
         },
         {
+          "type": "export_declaration",
+          "named": true
+        },
+        {
           "type": "function_definition",
           "named": true
         },
@@ -1614,6 +1633,10 @@
   {
     "type": "escape_sequence",
     "named": true
+  },
+  {
+    "type": "export",
+    "named": false
   },
   {
     "type": "extends",

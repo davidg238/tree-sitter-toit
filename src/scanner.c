@@ -114,20 +114,30 @@ static void skip(TSLexer *lexer) {
 
 bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
   Scanner *scanner = (Scanner *)payload;
-  if (valid_symbols[ERROR_SENTINEL]) return false;
+
+  bool is_error_recovery = valid_symbols[ERROR_SENTINEL];
 
   if (scanner->queued_newline && valid_symbols[NEWLINE]) {
+    if (is_error_recovery) return false;
     scanner->queued_newline = false;
     lexer->result_symbol = NEWLINE;
     return true;
   }
 
-  if (scanner->queued_dedent_count > 0 && valid_symbols[DEDENT]) {
-    scanner->queued_dedent_count--;
-    pop_indent(scanner);
-    lexer->result_symbol = DEDENT;
-    scanner->queued_newline = true;
-    return true;
+  if (scanner->queued_dedent_count > 0) {
+    if (is_error_recovery) return false;
+    if (valid_symbols[DEDENT]) {
+      scanner->queued_dedent_count--;
+      pop_indent(scanner);
+      lexer->result_symbol = DEDENT;
+      return true;
+    } else if (lexer->eof(lexer)) {
+      // If we are at EOF and DEDENT is not valid, the parser has likely 
+      // dropped the block during error recovery. We must clear our internal 
+      // indent stack to avoid an infinite loop of queuing dedents.
+      scanner->queued_dedent_count--;
+      pop_indent(scanner);
+    }
   }
 
   bool found_end_of_line = false;
@@ -189,7 +199,6 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
           scanner->queued_dedent_count = extra_dedents - 1;
           pop_indent(scanner);
           lexer->result_symbol = DEDENT;
-          scanner->queued_newline = true;
           return true;
         }
       }

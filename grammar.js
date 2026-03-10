@@ -31,6 +31,7 @@ module.exports = grammar({
     [$.function_call, $._primary_expression],
     [$.block_function_call, $._primary_expression],
     [$.function_call, $.block_function_call],
+    [$.variable_declaration, $.block_function_call],
   ],
   rules: {
     source_file: ($) => repeat(choice($._definition, $._newline)),
@@ -38,6 +39,7 @@ module.exports = grammar({
     _definition: ($) =>
       choice(
         $.import_statement,
+        $.export_declaration,
         $.class_definition,
         prec(3, $.function_definition),
         $.variable_declaration,
@@ -54,6 +56,13 @@ module.exports = grammar({
       ),
 
     _module_path: ($) => seq($.identifier, repeat(seq(".", $.identifier))),
+
+    export_declaration: ($) =>
+      prec.left(seq(
+        "export",
+        repeat1(choice($.identifier, "*")),
+        optional($._newline)
+      )),
 
     class_definition: ($) =>
       seq(
