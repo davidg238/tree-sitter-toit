@@ -10,3 +10,6 @@ parse_debug.txt
 failures.log
 debug.log
 .DS_Store
+
+# Temporary directory for debugging logs
+tmp/

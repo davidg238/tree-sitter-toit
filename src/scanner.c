@@ -7,7 +7,8 @@ enum TokenType {
   INDENT,
   DEDENT,
   NEWLINE,
-  ERROR_SENTINEL
+  ERROR_SENTINEL,
+  CONTINUATION
 };
 
 typedef struct {
@@ -15,6 +16,7 @@ typedef struct {
   uint32_t length;
   uint32_t capacity;
   uint16_t queued_dedent_count;
+  uint16_t pending_indent_length;
   bool eof_newline_emitted;
   bool queued_newline;
 } Scanner;
@@ -65,6 +67,10 @@ unsigned tree_sitter_toit_external_scanner_serialize(void *payload, char *buffer
   memcpy(buffer + i, &scanner->queued_newline, sizeof(bool));
   i += sizeof(bool);
 
+  if (i + sizeof(uint16_t) > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) return i;
+  memcpy(buffer + i, &scanner->pending_indent_length, sizeof(uint16_t));
+  i += sizeof(uint16_t);
+
   for (size_t j = 1; j < scanner->length; ++j) {
     if (i + sizeof(uint16_t) > TREE_SITTER_SERIALIZATION_BUFFER_SIZE) break;
     memcpy(buffer + i, &scanner->indent_stack[j], sizeof(uint16_t));
@@ -76,9 +82,10 @@ unsigned tree_sitter_toit_external_scanner_serialize(void *payload, char *buffer
 void tree_sitter_toit_external_scanner_deserialize(void *payload, const char *buffer, unsigned length) {
   Scanner *scanner = (Scanner *)payload;
   scanner->queued_dedent_count = 0;
+  scanner->pending_indent_length = 0;
   scanner->length = 0;
   push_indent(scanner, 0);
-  
+
   if (length == 0) return;
 
   size_t i = 0;
@@ -100,6 +107,13 @@ void tree_sitter_toit_external_scanner_deserialize(void *payload, const char *bu
     scanner->queued_newline = false;
   }
 
+  if (i + sizeof(uint16_t) <= length) {
+    memcpy(&scanner->pending_indent_length, buffer + i, sizeof(uint16_t));
+    i += sizeof(uint16_t);
+  } else {
+    scanner->pending_indent_length = 0;
+  }
+
   for (; i < length; i += sizeof(uint16_t)) {
     uint16_t indent;
     if (i + sizeof(uint16_t) > length) break;
@@ -115,29 +129,49 @@ static void skip(TSLexer *lexer) {
 bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const bool *valid_symbols) {
   Scanner *scanner = (Scanner *)payload;
 
-  bool is_error_recovery = valid_symbols[ERROR_SENTINEL];
+  if (valid_symbols[ERROR_SENTINEL]) return false;
 
-  if (scanner->queued_newline && valid_symbols[NEWLINE]) {
-    if (is_error_recovery) return false;
-    scanner->queued_newline = false;
-    lexer->result_symbol = NEWLINE;
+  if (scanner->queued_dedent_count > 0 && valid_symbols[DEDENT]) {
+    scanner->queued_dedent_count--;
+    pop_indent(scanner);
+    lexer->result_symbol = DEDENT;
+    scanner->queued_newline = true;
     return true;
   }
 
-  if (scanner->queued_dedent_count > 0) {
-    if (is_error_recovery) return false;
-    if (valid_symbols[DEDENT]) {
-      scanner->queued_dedent_count--;
-      pop_indent(scanner);
-      lexer->result_symbol = DEDENT;
+  if (scanner->queued_dedent_count > 0 && lexer->eof(lexer)) {
+    // At EOF with queued dedents but DEDENT not valid: clear to avoid loop
+    scanner->queued_dedent_count--;
+    pop_indent(scanner);
+  }
+
+  // After all queued dedents consumed, check if we need to re-indent.
+  // This handles: indent 6 -> indent 4 when stack was [0, 2, 6]:
+  //   DEDENT pops 6, stack = [0, 2], then INDENT pushes 4.
+  // Check BEFORE queued_newline so INDENT takes priority over NEWLINE.
+  if (scanner->pending_indent_length > 0) {
+    if (valid_symbols[INDENT]) {
+      push_indent(scanner, scanner->pending_indent_length);
+      scanner->pending_indent_length = 0;
+      scanner->queued_newline = false;
+      lexer->result_symbol = INDENT;
       return true;
-    } else if (lexer->eof(lexer)) {
-      // If we are at EOF and DEDENT is not valid, the parser has likely 
-      // dropped the block during error recovery. We must clear our internal 
-      // indent stack to avoid an infinite loop of queuing dedents.
-      scanner->queued_dedent_count--;
-      pop_indent(scanner);
     }
+    // If INDENT not valid, emit as CONTINUATION (expression continuation)
+    if (valid_symbols[CONTINUATION]) {
+      scanner->pending_indent_length = 0;
+      scanner->queued_newline = false;
+      lexer->mark_end(lexer);
+      lexer->result_symbol = CONTINUATION;
+      return true;
+    }
+    scanner->pending_indent_length = 0;
+  }
+
+  if (scanner->queued_newline && valid_symbols[NEWLINE]) {
+    scanner->queued_newline = false;
+    lexer->result_symbol = NEWLINE;
+    return true;
   }
 
   bool found_end_of_line = false;
@@ -172,9 +206,16 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
     if (scanner->length > 0) {
       uint16_t current_indent_length = back_indent(scanner);
 
-      if (valid_symbols[INDENT] && indent_length > current_indent_length) {
-        push_indent(scanner, indent_length);
-        lexer->result_symbol = INDENT;
+      if (indent_length > current_indent_length) {
+        if (valid_symbols[INDENT]) {
+          push_indent(scanner, indent_length);
+          lexer->result_symbol = INDENT;
+          return true;
+        }
+        // Expression continuation: indentation increased but INDENT not valid.
+        // Emit a CONTINUATION token that is in extras, so the parser skips it.
+        lexer->mark_end(lexer);
+        lexer->result_symbol = CONTINUATION;
         return true;
       }
 
@@ -189,6 +230,13 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
           } else {
              break;
           }
+        }
+
+        // Check if we need to re-indent after dedenting.
+        // e.g., indent 6 -> 4, stack [0, 2, 6]: dedent to [0, 2], then indent to 4.
+        uint16_t target_indent = (temp_length > 0) ? scanner->indent_stack[temp_length - 1] : 0;
+        if (indent_length > target_indent) {
+          scanner->pending_indent_length = indent_length;
         }
 
         if (valid_symbols[NEWLINE]) {
