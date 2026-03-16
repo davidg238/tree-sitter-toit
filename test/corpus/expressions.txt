@@ -1,0 +1,422 @@
+==================
+Binary arithmetic
+==================
+
+main:
+  x := 1 + 2
+  y := 3 * 4
+  z := 5 - 6
+  w := 7 / 8
+  r := 9 % 2
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (number)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (number)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (number)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (number)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (number)
+        (number)))))
+
+==================
+Comparison operators
+==================
+
+main:
+  a := x == y
+  b := x != y
+  c := x < y
+  d := x > y
+  e := x <= y
+  f := x >= y
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))))
+
+==================
+Logical operators
+==================
+
+main:
+  a := x and y
+  b := x or y
+  c := not x
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (unary_expression
+        (identifier)))))
+
+==================
+Unary minus
+==================
+
+main:
+  x := -1
+  y := -x
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (unary_expression
+        (identifier)))))
+
+==================
+Bitwise operators
+==================
+
+main:
+  a := x & y
+  b := x | y
+  c := x ^ y
+  d := x << 2
+  e := x >> 1
+  f := ~x
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (unary_expression
+        (identifier)))))
+
+==================
+Ternary expression
+==================
+
+main:
+  x := true ? 1 : 0
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (ternary_expression
+        (identifier)
+        (number)
+        (number)))))
+
+==================
+Is and as operators
+==================
+
+main:
+  a := x is int
+  b := x as string
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (identifier)
+        (identifier)))))
+
+==================
+Postfix increment and decrement
+==================
+
+main:
+  x++
+  x--
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (postfix_expression
+      (identifier))
+    (postfix_expression
+      (identifier))))
+
+==================
+Prefix increment and decrement
+==================
+
+main:
+  ++x
+  --x
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (prefix_expression
+      (identifier))
+    (prefix_expression
+      (identifier))))
+
+==================
+Member access
+==================
+
+main:
+  x := foo.bar
+  y := foo.bar.baz
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (member_access
+        (identifier)
+        (identifier)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (member_access
+        (member_access
+          (identifier)
+          (identifier))
+        (identifier)))))
+
+==================
+Subscript expression
+==================
+
+main:
+  x := list[0]
+  y := map["key"]
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (subscript_expression
+        (identifier)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (subscript_expression
+        (identifier)
+        (string)))))
+
+==================
+Slice expression
+==================
+
+main:
+  x := list[1..3]
+  y := list[..3]
+  z := list[1..]
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (subscript_expression
+        (identifier)
+        (number)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (subscript_expression
+        (identifier)
+        (number)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (subscript_expression
+        (identifier)
+        (number)))))
+
+==================
+Parenthesized expression
+==================
+
+main:
+  x := (1 + 2) * 3
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (binary_expression
+        (parenthesized_expression
+          (binary_expression
+            (number)
+            (number)))
+        (number)))))
+
+==================
+Chained comparison
+==================
+
+main:
+  if 0 <= x < 10:
+    print "in range"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (if_statement
+      condition: (chained_comparison
+        (number)
+        (identifier)
+        (number))
+      (function_call
+        function: (identifier)
+        (string)))))

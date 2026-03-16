@@ -1,0 +1,85 @@
+==================
+Try finally
+==================
+
+main:
+  try:
+    print "try"
+  finally:
+    print "finally"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (try_statement
+      (function_call
+        function: (identifier)
+        (string))
+      (function_call
+        function: (identifier)
+        (string)))))
+
+==================
+Catch with block
+==================
+
+main:
+  e := catch: throw "error"
+  if e != null:
+    print "caught"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (block_function_call
+        function: (identifier)
+        (block
+          (throw_statement
+            (string)))))
+    (if_statement
+      condition: (binary_expression
+        (identifier)
+        (identifier))
+      (function_call
+        function: (identifier)
+        (string)))))
+
+==================
+Try with finally flag pattern
+==================
+
+main:
+  succeeded := false
+  try:
+    foo
+    succeeded = true
+  finally:
+    if not succeeded:
+      cleanup
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (identifier))
+    (try_statement
+      (identifier)
+      (assignment
+        left: (identifier)
+        (operator)
+        right: (identifier))
+      (if_statement
+        condition: (unary_expression
+          (identifier))
+        (identifier)))))

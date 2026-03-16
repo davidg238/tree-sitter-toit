@@ -1,0 +1,148 @@
+==================
+Single line comment
+==================
+
+// This is a comment.
+
+---
+
+(source_file
+  (comment))
+
+==================
+Multiple single line comments
+==================
+
+// First comment.
+// Second comment.
+
+---
+
+(source_file
+  (comment)
+  (comment))
+
+==================
+Block comment alone
+==================
+
+/* block comment */
+
+---
+
+(source_file
+  (block_comment))
+
+==================
+Block comment after import
+==================
+
+import .foo
+
+/* block comment */
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier))
+  (block_comment))
+
+==================
+Block comment after export
+==================
+
+export *
+
+/* block comment */
+
+---
+
+(source_file
+  (export_declaration)
+  (block_comment))
+
+==================
+Multi-line block comment
+==================
+
+/**
+The Toit core library.
+
+This library is automatically imported into every Toit program.
+*/
+
+---
+
+(source_file
+  (block_comment))
+
+==================
+Multi-line block comment after content
+==================
+
+import .foo
+
+/**
+Multi-line doc comment.
+*/
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier))
+  (block_comment))
+
+==================
+Block comment inside class
+==================
+
+class Foo:
+  /* a comment */
+  x := 1
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (block_comment)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))))
+
+==================
+Line comment inside class
+==================
+
+class Foo:
+  // a comment
+  x := 1
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (comment)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))))
+
+==================
+End-of-line comment
+==================
+
+x := 1  // end of line comment
+
+---
+
+(source_file
+  (variable_declaration
+    left: (identifier)
+    (operator)
+    right: (number))
+  (comment))

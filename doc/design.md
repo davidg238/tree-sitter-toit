@@ -18,6 +18,21 @@
 * [Toit Language tasks](https://docs.toit.io/language/tasks)
 * [Toit Exceptions](https://docs.toit.io/language/exceptions)
 
+## Toit Language Quick Reference
+
+The file `doc/instructions-long.md` contains a comprehensive Toit coding conventions guide, useful as a reference for parser development. Key syntax points relevant to grammar design:
+
+* **Naming**: `kebab-case` for variables/functions, `PascalCase` for classes, `KEBAB-CASE` for constants
+* **Variable/field declaration**: `:=` mutable, `::=` immutable, `/` suffix for type annotations, `_` suffix for private
+* **Constructor fields**: `.field` syntax initializes fields directly, `this.field_ = param` for explicit assignment
+* **Named parameters**: `--name` at call and declaration sites, `--no-name` for false
+* **Blocks**: `:` starts a block (lambda), `::` for shorthand, `[block]` for block parameters
+* **Types**: `/` suffix (e.g., `name/string`), `?` for nullable (e.g., `int?`), `->` for return types
+* **Literals**: `{:}` empty map, `{}` empty set, `#[]` empty byte array, trailing commas in multi-line
+* **Loops**: `x.repeat:`, `collection.do:`, `continue.do` / `continue.repeat` for next iteration
+* **Exceptions**: `throw` (usually strings), `catch:` with block, `try:/finally:` (no `try/catch` blocks)
+* **String interpolation**: `$name` or `$(expr)` with optional format specifiers like `$(%04d value)`
+
 ## Architecture Decisions
 
 ### Custom Scanner vs. grammar.js

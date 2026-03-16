@@ -1,0 +1,253 @@
+==================
+Integer literals
+==================
+
+main:
+  a := 42
+  b := 0xff
+  c := 0b1010
+  d := 1_000_000
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))))
+
+==================
+Float literals
+==================
+
+main:
+  a := 3.14
+  b := 1.0e10
+  c := 2.5E-3
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))))
+
+==================
+Character literal
+==================
+
+main:
+  a := 'a'
+  b := '\n'
+  c := '\x2a'
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (character))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (character))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (character))))
+
+==================
+String literal
+==================
+
+main:
+  a := "hello"
+  b := "world\n"
+  c := ""
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (escape_sequence)))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string))))
+
+==================
+String interpolation
+==================
+
+main:
+  a := "hello $name"
+  b := "result: $(x + 1)"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (interpolation
+          (identifier))))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (interpolation
+          (binary_expression
+            (identifier)
+            (number)))))))
+
+==================
+List literal
+==================
+
+main:
+  a := []
+  b := [1, 2, 3]
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (literal_list))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (literal_list
+        (number)
+        (number)
+        (number)))))
+
+==================
+Map literal
+==================
+
+main:
+  a := {:}
+  b := {"key": "value"}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (literal_map))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (literal_map
+        (string)
+        (string)))))
+
+==================
+Set literal
+==================
+
+main:
+  a := {1, 2, 3}
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (literal_set
+        (number)
+        (number)
+        (number)))))
+
+==================
+Byte array literal
+==================
+
+main:
+  a := #[]
+  b := #[1, 2, 3]
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (literal_byte_array))
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (literal_byte_array
+        (number)
+        (number)
+        (number)))))
+
+==================
+Uninitialized literal
+==================
+
+class Foo:
+  x/int := ?
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier))
+      (uninitialized_literal))))

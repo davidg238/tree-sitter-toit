@@ -1,0 +1,249 @@
+==================
+If statement
+==================
+
+main:
+  if true:
+    print "yes"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (if_statement
+      condition: (identifier)
+      (function_call
+        function: (identifier)
+        (string)))))
+
+==================
+If else statement
+==================
+
+main:
+  if true:
+    print "yes"
+  else:
+    print "no"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (if_statement
+      condition: (identifier)
+      (function_call
+        function: (identifier)
+        (string))
+      (function_call
+        function: (identifier)
+        (string)))))
+
+==================
+If else if
+==================
+
+main:
+  if x == 1:
+    print "one"
+  else if x == 2:
+    print "two"
+  else:
+    print "other"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (if_statement
+      condition: (binary_expression
+        (identifier)
+        (number))
+      (function_call
+        function: (identifier)
+        (string))
+      (if_statement
+        condition: (binary_expression
+          (identifier)
+          (number))
+        (function_call
+          function: (identifier)
+          (string))
+        (function_call
+          function: (identifier)
+          (string))))))
+
+==================
+While loop
+==================
+
+main:
+  while true:
+    print "loop"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (while_statement
+      (identifier)
+      (function_call
+        function: (identifier)
+        (string)))))
+
+==================
+For loop
+==================
+
+main:
+  for i := 0; i < 10; i++:
+    print i
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (for_statement
+      (variable_declaration
+        left: (identifier)
+        (operator)
+        right: (number))
+      (binary_expression
+        (identifier)
+        (number))
+      (postfix_expression
+        (identifier))
+      (function_call
+        function: (identifier)
+        (identifier)))))
+
+==================
+Try finally
+==================
+
+main:
+  try:
+    print "try"
+  finally:
+    print "finally"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (try_statement
+      (function_call
+        function: (identifier)
+        (string))
+      (function_call
+        function: (identifier)
+        (string)))))
+
+==================
+Throw statement
+==================
+
+main:
+  throw "error"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (throw_statement
+      (string))))
+
+==================
+Return statement
+==================
+
+foo:
+  return 42
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (return_statement
+      (number))))
+
+==================
+Break statement
+==================
+
+main:
+  while true:
+    break
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (while_statement
+      (identifier)
+      (break_statement))))
+
+==================
+Continue statement
+==================
+
+main:
+  while true:
+    continue
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (while_statement
+      (identifier)
+      (continue_statement))))
+
+==================
+If with condition declaration
+==================
+
+main:
+  if x := foo:
+    print x
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (if_statement
+      condition: (identifier)
+      (operator)
+      (identifier)
+      (function_call
+        function: (identifier)
+        (identifier)))))
+
+==================
+Inline if statement
+==================
+
+main:
+  if true: print "yes"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (if_statement
+      condition: (identifier)
+      (function_call
+        function: (identifier)
+        (string)))))

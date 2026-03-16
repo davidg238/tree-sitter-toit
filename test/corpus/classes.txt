@@ -1,0 +1,156 @@
+==================
+Simple class
+==================
+
+class Foo:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)))
+
+==================
+Class with extends
+==================
+
+class Foo extends Bar:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (type
+      (identifier))))
+
+==================
+Abstract class
+==================
+
+abstract class Foo:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)))
+
+==================
+Interface
+==================
+
+interface Foo:
+  abstract bar
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (function_definition
+      (identifier))))
+
+==================
+Mixin
+==================
+
+mixin Foo:
+  bar:
+    return 42
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (function_definition
+      (identifier)
+      (return_statement
+        (number)))))
+
+==================
+Monitor
+==================
+
+monitor Foo:
+  x := 0
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))))
+
+==================
+Class with implements
+==================
+
+class Foo implements Bar:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (type
+      (identifier))))
+
+==================
+Class with extends and implements
+==================
+
+class Foo extends Bar implements Baz:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (type
+      (identifier))
+    (type
+      (identifier))))
+
+==================
+Class with with mixin
+==================
+
+class Foo extends Bar with Baz:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (type
+      (identifier))
+    (type
+      (identifier))))
+
+==================
+Class with field and method
+==================
+
+class Foo:
+  x/int
+  bar:
+    return x
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier)))
+    (function_definition
+      (identifier)
+      (return_statement
+        (identifier)))))

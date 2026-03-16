@@ -1,0 +1,185 @@
+==================
+Block function call with colon
+==================
+
+main:
+  list.do: print it
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (block_function_call
+      function: (member_access
+        (identifier)
+        (identifier))
+      (block
+        (function_call
+          function: (identifier)
+          (identifier))))))
+
+==================
+Block function call with double colon
+==================
+
+main:
+  list.map:: it + 1
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (block_function_call
+      function: (member_access
+        (identifier)
+        (identifier))
+      (double_colon_block
+        (binary_expression
+          (identifier)
+          (number))))))
+
+==================
+Block with params
+==================
+
+main:
+  list.do: |item|
+    print item
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (block_function_call
+      function: (member_access
+        (identifier)
+        (identifier))
+      (block
+        (identifier)
+        (function_call
+          function: (identifier)
+          (identifier))))))
+
+==================
+Block with typed params
+==================
+
+main:
+  list.do: |item/string|
+    print item
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (block_function_call
+      function: (member_access
+        (identifier)
+        (identifier))
+      (block
+        (identifier)
+        (type
+          (identifier))
+        (function_call
+          function: (identifier)
+          (identifier))))))
+
+==================
+Block with if inside
+==================
+
+main:
+  list.do: if true: print "yes"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (block_function_call
+      function: (member_access
+        (identifier)
+        (identifier))
+      (block
+        (if_statement
+          condition: (identifier)
+          (function_call
+            function: (identifier)
+            (string)))))))
+
+==================
+Block with continue
+==================
+
+main:
+  list.do: |item|
+    if item == "foo": continue.do
+    print item
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (block_function_call
+      function: (member_access
+        (identifier)
+        (identifier))
+      (block
+        (identifier)
+        (if_statement
+          condition: (binary_expression
+            (identifier)
+            (string))
+          (continue_statement
+            (identifier)))
+        (function_call
+          function: (identifier)
+          (identifier))))))
+
+==================
+Catch block
+==================
+
+main:
+  e := catch: throw "error"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (block_function_call
+        function: (identifier)
+        (block
+          (throw_statement
+            (string)))))))
+
+==================
+Function call with named args and block
+==================
+
+main:
+  foo --name="bar": print it
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (block_function_call
+      function: (identifier)
+      (named_argument
+        name: (identifier)
+        (string))
+      (block
+        (function_call
+          function: (identifier)
+          (identifier))))))

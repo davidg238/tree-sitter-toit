@@ -1,0 +1,160 @@
+==================
+Simple function call
+==================
+
+main:
+  print "hello"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (function_call
+      function: (identifier)
+      (string))))
+
+==================
+Function call with named argument
+==================
+
+main:
+  foo --name="bar"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (function_call
+      function: (identifier)
+      (named_argument
+        name: (identifier)
+        (string)))))
+
+==================
+Function call with no-flag
+==================
+
+main:
+  foo --no-verbose
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (function_call
+      function: (identifier)
+      (named_argument
+        name: (identifier)))))
+
+==================
+Method call
+==================
+
+main:
+  list.add 42
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (function_call
+      function: (member_access
+        (identifier)
+        (identifier))
+      (number))))
+
+==================
+Chained method calls
+==================
+
+main:
+  x := list.map:: it + 1
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (block_function_call
+        function: (member_access
+          (identifier)
+          (identifier))
+        (double_colon_block
+          (binary_expression
+            (identifier)
+            (number)))))))
+
+==================
+Multi-line function call
+==================
+
+main:
+  foo
+    arg1
+    arg2
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (function_call
+      function: (identifier)
+      (identifier)
+      (identifier))))
+
+==================
+Multi-line function call with named args
+==================
+
+main:
+  foo
+    --name="bar"
+    --count=3
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (function_call
+      function: (identifier)
+      (named_argument
+        name: (identifier)
+        (string))
+      (named_argument
+        name: (identifier)
+        (number)))))
+
+==================
+Constructor call with named args
+==================
+
+main:
+  x := Foo
+    --name="bar"
+    --count=3
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (function_call
+        function: (identifier)
+        (named_argument
+          name: (identifier)
+          (string))
+        (named_argument
+          name: (identifier)
+          (number))))))

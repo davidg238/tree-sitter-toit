@@ -1,7 +1,7 @@
 module.exports = grammar({
   name: "toit",
   externals: ($) => [$._indent, $._dedent, $._newline, $._error_sentinel, $._continuation],
-  extras: ($) => [/[ \t\f\r\v\uFEFF\u2060\u200B]/, $.comment, $._continuation],
+  extras: ($) => [/[ \t\f\r\v\uFEFF\u2060\u200B]/, $.comment, $.block_comment, $._continuation],
   word: ($) => $.identifier,
   conflicts: ($) => [
     [$.function_definition, $._primary_expression, $.member_access],
@@ -791,11 +791,9 @@ module.exports = grammar({
         seq("%", repeat(choice(/[-+ 0#]/, /\d/, /\./)), /[diouxXeEfFgGcs]/),
       ),
 
-    comment: ($) =>
-      choice(
-        token(seq("//", /[^\n]*/)),
-        token(seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/")),
-      ),
+    comment: ($) => token(seq("//", /[^\n]*/)),
+
+    block_comment: ($) => token(seq("/*", /[^*]*\*+([^/*][^*]*\*+)*/, "/")),
 
     _assign_op: ($) => choice(":=", "::="),
     _double_colon: ($) => "::",

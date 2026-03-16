@@ -1,0 +1,107 @@
+==================
+Simple import
+==================
+
+import .foo
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier)))
+
+==================
+Import with dotted path
+==================
+
+import encoding.json
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier)
+    (identifier)))
+
+==================
+Import with show
+==================
+
+import .foo show Bar Baz
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier)
+    (identifier)
+    (identifier)))
+
+==================
+Import with show star
+==================
+
+import .foo show *
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier)))
+
+==================
+Import with alias
+==================
+
+import .foo as bar
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier)
+    alias: (identifier)))
+
+==================
+Multiple imports
+==================
+
+import .foo
+import .bar
+import encoding.json
+
+---
+
+(source_file
+  (import_statement
+    path: (identifier))
+  (import_statement
+    path: (identifier))
+  (import_statement
+    path: (identifier)
+    (identifier)))
+
+==================
+Export star
+==================
+
+export *
+
+---
+
+(source_file
+  (export_declaration))
+
+==================
+Export identifiers
+==================
+
+export Foo bar baz
+
+---
+
+(source_file
+  (export_declaration
+    (identifier)
+    (identifier)
+    (identifier)))

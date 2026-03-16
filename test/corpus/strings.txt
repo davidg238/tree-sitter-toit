@@ -1,0 +1,165 @@
+==================
+Simple string
+==================
+
+main:
+  x := "hello world"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string))))
+
+==================
+String with escape sequences
+==================
+
+main:
+  x := "hello\nworld\t!"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (escape_sequence)
+        (escape_sequence)))))
+
+==================
+String with simple interpolation
+==================
+
+main:
+  x := "hello $name"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (interpolation
+          (identifier))))))
+
+==================
+String with expression interpolation
+==================
+
+main:
+  x := "result: $(x + 1)"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (interpolation
+          (binary_expression
+            (identifier)
+            (number)))))))
+
+==================
+String with format specifier
+==================
+
+main:
+  x := "$(%04d value)"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (interpolation
+          (format_specifier)
+          (identifier))))))
+
+==================
+Empty string
+==================
+
+main:
+  x := ""
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string))))
+
+==================
+Triple quoted string
+==================
+
+main:
+  x := """hello world"""
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (triple_string))))
+
+==================
+String with hex escape
+==================
+
+main:
+  x := "\x2a"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (escape_sequence)))))
+
+==================
+String with unicode escape
+==================
+
+main:
+  x := "\u{00e6}"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (string
+        (escape_sequence)))))

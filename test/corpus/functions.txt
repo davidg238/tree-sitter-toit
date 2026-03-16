@@ -1,0 +1,308 @@
+==================
+Simple function no params
+==================
+
+main:
+  print "hello"
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (function_call
+      function: (identifier)
+      (string))))
+
+==================
+Function with params
+==================
+
+add a b:
+  return a + b
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter
+      name: (identifier))
+    (parameter
+      name: (identifier))
+    (return_statement
+      (binary_expression
+        (identifier)
+        (identifier)))))
+
+==================
+Function with typed params
+==================
+
+greet name/string:
+  print name
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter
+      name: (identifier)
+      type: (type
+        (identifier)))
+    (function_call
+      function: (identifier)
+      (identifier))))
+
+==================
+Function with return type
+==================
+
+square x/int -> int:
+  return x * x
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter
+      name: (identifier)
+      type: (type
+        (identifier)))
+    return_type: (type
+      (identifier))
+    (return_statement
+      (binary_expression
+        (identifier)
+        (identifier)))))
+
+==================
+Function with named params
+==================
+
+foo --name --count=0:
+  print name
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter
+      name: (identifier))
+    (parameter
+      name: (identifier)
+      (number))
+    (function_call
+      function: (identifier)
+      (identifier))))
+
+==================
+Function with block param
+==================
+
+each [block]:
+  block.call
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter
+      (block_parameter
+        name: (identifier)))
+    (member_access
+      (identifier)
+      (identifier))))
+
+==================
+Abstract function
+==================
+
+class Foo:
+  abstract bar
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (function_definition
+      (identifier))))
+
+==================
+Static function
+==================
+
+class Foo:
+  static create -> Foo:
+    return Foo
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (function_definition
+      (identifier)
+      return_type: (type
+        (identifier))
+      (return_statement
+        (identifier)))))
+
+==================
+Setter method
+==================
+
+class Foo:
+  field_ := 0
+  field= value:
+    field_ = value
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (function_definition
+      (identifier)
+      (parameter
+        name: (identifier))
+      (assignment
+        left: (identifier)
+        (operator)
+        right: (identifier)))))
+
+==================
+Constructor
+==================
+
+class Foo:
+  x/int
+
+  constructor .x:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier)))
+    (function_definition
+      (parameter
+        name: (identifier)))))
+
+==================
+Named constructor
+==================
+
+class Foo:
+  x/int
+
+  constructor.from-int .x:
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier)))
+    (function_definition
+      (identifier)
+      (parameter
+        name: (identifier)))))
+
+==================
+Continuation line params
+==================
+
+foo
+    param1
+    param2/string:
+  return param1
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter
+      name: (identifier))
+    (parameter
+      name: (identifier)
+      type: (type
+        (identifier)))
+    (return_statement
+      (identifier))))
+
+==================
+Continuation line params with return type
+==================
+
+foo
+    param1
+    -> int:
+  return 42
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (parameter
+      name: (identifier))
+    return_type: (type
+      (identifier))
+    (return_statement
+      (number))))
+
+==================
+Operator method
+==================
+
+class Foo:
+  operator == other:
+    return false
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (function_definition
+      (parameter
+        name: (identifier))
+      (return_statement
+        (identifier)))))
+
+==================
+Operator subscript method
+==================
+
+class Foo:
+  operator [] index:
+    return null
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (function_definition
+      (parameter
+        name: (identifier))
+      (return_statement
+        (identifier)))))

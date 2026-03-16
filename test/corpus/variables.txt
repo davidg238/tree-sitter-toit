@@ -1,0 +1,221 @@
+==================
+Mutable variable declaration
+==================
+
+x := 1
+
+---
+
+(source_file
+  (variable_declaration
+    left: (identifier)
+    (operator)
+    right: (number)))
+
+==================
+Immutable variable declaration
+==================
+
+x ::= 1
+
+---
+
+(source_file
+  (variable_declaration
+    left: (identifier)
+    (operator)
+    right: (number)))
+
+==================
+Variable with string
+==================
+
+name := "hello"
+
+---
+
+(source_file
+  (variable_declaration
+    left: (identifier)
+    (operator)
+    right: (string)))
+
+==================
+Typed local declaration
+==================
+
+main:
+  x/int := 42
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (typed_local_declaration
+      left: (identifier)
+      type: (type
+        (identifier))
+      (operator)
+      right: (number))))
+
+==================
+Nullable typed local declaration
+==================
+
+main:
+  x/int? := null
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (typed_local_declaration
+      left: (identifier)
+      type: (type
+        (identifier))
+      (operator)
+      right: (identifier))))
+
+==================
+Field declaration with type
+==================
+
+class Foo:
+  name/string
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier)))))
+
+==================
+Field declaration with type and default
+==================
+
+class Foo:
+  name/string := "default"
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier))
+      (string))))
+
+==================
+Nullable field declaration
+==================
+
+class Foo:
+  name/string? := null
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier))
+      (identifier))))
+
+==================
+Private field with underscore suffix
+==================
+
+class Foo:
+  name_/string
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier)))))
+
+==================
+Field must be initialized
+==================
+
+class Foo:
+  name/string := ?
+
+---
+
+(source_file
+  (class_definition
+    (identifier)
+    (field_declaration
+      (identifier)
+      type: (type
+        (identifier))
+      (uninitialized_literal))))
+
+==================
+Assignment
+==================
+
+main:
+  x := 1
+  x = 2
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (assignment
+      left: (identifier)
+      (operator)
+      right: (number))))
+
+==================
+Compound assignment
+==================
+
+main:
+  x := 1
+  x += 2
+  x -= 1
+  x *= 3
+
+---
+
+(source_file
+  (function_definition
+    (identifier)
+    (variable_declaration
+      left: (identifier)
+      (operator)
+      right: (number))
+    (assignment
+      left: (identifier)
+      (operator)
+      right: (number))
+    (assignment
+      left: (identifier)
+      (operator)
+      right: (number))
+    (assignment
+      left: (identifier)
+      (operator)
+      right: (number))))
