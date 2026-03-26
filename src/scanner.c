@@ -211,14 +211,30 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
       uint16_t current_indent_length = back_indent(scanner);
 
       if (indent_length > current_indent_length) {
-        if (valid_symbols[INDENT]) {
+        // Mark end BEFORE peeking, so INDENT/CONTINUATION tokens end here.
+        lexer->mark_end(lexer);
+
+        // When the line starts with a binary operator, this is expression
+        // continuation, not a new block. Emit CONTINUATION instead of INDENT.
+        // Must distinguish: '+' (binary) vs '++' (prefix increment).
+        bool starts_with_binop = false;
+        int32_t ch = lexer->lookahead;
+        if (ch == '*' || ch == '/' || ch == '%' ||
+            ch == '|' || ch == '&' || ch == '^' || ch == '?' || ch == '.' ||
+            ch == '<' || ch == '>' || ch == '=') {
+          starts_with_binop = true;
+        } else if (ch == '+') {
+          // Peek: '+' followed by non-'+' → binary addition (continuation).
+          // '++' → prefix increment (not continuation).
+          skip(lexer);
+          starts_with_binop = (lexer->lookahead != '+');
+        }
+
+        if (valid_symbols[INDENT] && !starts_with_binop) {
           push_indent(scanner, indent_length);
           lexer->result_symbol = INDENT;
           return true;
         }
-        // Expression continuation: indentation increased but INDENT not valid.
-        // Emit a CONTINUATION token that is in extras, so the parser skips it.
-        lexer->mark_end(lexer);
         lexer->result_symbol = CONTINUATION;
         return true;
       }

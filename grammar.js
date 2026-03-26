@@ -90,8 +90,8 @@ module.exports = grammar({
         $.export_declaration,
         $.class_definition,
         prec(3, $.function_definition),
-        $.variable_declaration,
-        $.field_declaration,
+        seq($.variable_declaration, $._newline),
+        seq($.field_declaration, $._newline),
       ),
 
     import_statement: ($) =>
@@ -523,7 +523,7 @@ module.exports = grammar({
           field("function", choice($.identifier, $.member_access)),
           choice(
             // All args on same line
-            repeat1(choice($._primary_expression, $.named_argument)),
+            repeat1(choice($._primary_expression, $.named_argument, $.postfix_expression)),
             // All args in continuation block
             seq(
               $._indent,
@@ -532,7 +532,7 @@ module.exports = grammar({
             ),
             // Mixed: some args on same line, more on continuation lines
             seq(
-              repeat1(choice($._primary_expression, $.named_argument)),
+              repeat1(choice($._primary_expression, $.named_argument, $.postfix_expression)),
               $._indent,
               repeat1(choice($._expression, $.named_argument, $._newline)),
               $._dedent,
@@ -548,14 +548,14 @@ module.exports = grammar({
           field("function", choice($.identifier, $.member_access)),
           optional(
             choice(
-              repeat1(choice($._primary_expression, $.named_argument)),
+              repeat1(choice($._primary_expression, $.named_argument, $.postfix_expression)),
               seq(
                 $._indent,
                 repeat1(choice($._expression, $.named_argument, $._newline)),
                 $._dedent,
               ),
               seq(
-                repeat1(choice($._primary_expression, $.named_argument)),
+                repeat1(choice($._primary_expression, $.named_argument, $.postfix_expression)),
                 $._indent,
                 repeat1(choice($._expression, $.named_argument, $._newline)),
                 $._dedent,

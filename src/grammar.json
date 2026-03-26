@@ -42,12 +42,30 @@
           }
         },
         {
-          "type": "SYMBOL",
-          "name": "variable_declaration"
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "variable_declaration"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "_newline"
+            }
+          ]
         },
         {
-          "type": "SYMBOL",
-          "name": "field_declaration"
+          "type": "SEQ",
+          "members": [
+            {
+              "type": "SYMBOL",
+              "name": "field_declaration"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "_newline"
+            }
+          ]
         }
       ]
     },
@@ -2814,6 +2832,10 @@
                     {
                       "type": "SYMBOL",
                       "name": "named_argument"
+                    },
+                    {
+                      "type": "SYMBOL",
+                      "name": "postfix_expression"
                     }
                   ]
                 }
@@ -2866,6 +2888,10 @@
                         {
                           "type": "SYMBOL",
                           "name": "named_argument"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "postfix_expression"
                         }
                       ]
                     }
@@ -2946,6 +2972,10 @@
                         {
                           "type": "SYMBOL",
                           "name": "named_argument"
+                        },
+                        {
+                          "type": "SYMBOL",
+                          "name": "postfix_expression"
                         }
                       ]
                     }
@@ -2998,6 +3028,10 @@
                             {
                               "type": "SYMBOL",
                               "name": "named_argument"
+                            },
+                            {
+                              "type": "SYMBOL",
+                              "name": "postfix_expression"
                             }
                           ]
                         }
