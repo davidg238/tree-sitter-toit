@@ -431,10 +431,11 @@ module.exports = grammar({
       ),
 
     return_statement: ($) => prec.right(seq("return", optional(choice(
+      $.assignment,
       $._expression,
       $.block_function_call,
       // Multi-line return: expression on continuation lines
-      seq($._indent, repeat1(choice($._expression, $.block_function_call, $._newline)), $._dedent),
+      seq($._indent, repeat1(choice($._expression, $.block_function_call, $.assignment, $._newline)), $._dedent),
     )))),
 
     try_statement: ($) =>
@@ -446,7 +447,6 @@ module.exports = grammar({
           $._statement,
         ),
         optional(seq(
-          $._newline,  // NEWLINE emitted after try block's DEDENT
           "finally",
           ":",
           optional($._block_params),
@@ -826,7 +826,10 @@ module.exports = grammar({
       seq("[", repeat(choice(seq($._expression, optional(",")), $._newline)), "]"),
 
     literal_set: ($) =>
-      seq("{", repeat(choice(seq($._expression, optional(",")), $._newline)), "}"),
+      choice(
+        seq("{", "}"),  // empty set
+        seq("{", repeat1(choice(seq($._expression, optional(",")), $._newline)), "}"),
+      ),
 
     // Map literal: { key: value, ... } or {:} for empty map
     literal_map: ($) =>

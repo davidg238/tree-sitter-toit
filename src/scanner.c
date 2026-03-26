@@ -135,7 +135,11 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
     scanner->queued_dedent_count--;
     pop_indent(scanner);
     lexer->result_symbol = DEDENT;
-    scanner->queued_newline = true;
+    // Don't queue a NEWLINE after DEDENT. The DEDENT itself closes the block,
+    // and the preceding NEWLINE already terminated the last statement.
+    // A post-DEDENT NEWLINE would be consumed by _statement's $._newline,
+    // breaking else/finally continuation (the parser would see the if_statement
+    // as complete before reaching "else").
     return true;
   }
 
