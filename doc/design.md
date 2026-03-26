@@ -59,7 +59,7 @@ In our Toit grammar, the external scanner is essential for effectively tracking 
 | 2026-03-13 | —           | 55/144        | 38%       |
 | 2026-03-14 | —           | 94/144        | 65%       |
 | 2026-03-16 | 105/~119    | 105/144       | 73%       |
-| 2026-03-26 | 85/~119     | 126/144       | 87.5%     |
+| 2026-03-26 | 85/~119     | 126→132/144   | 87.5→91.7%|
 
 ### Key Fix: else/else-if after indented blocks (2026-03-26)
 
@@ -73,35 +73,32 @@ The biggest single improvement came from removing the post-DEDENT NEWLINE in the
 
 **Impact:** 21 files fixed (105 → 126), covering the vast majority of `else`/`else if` chains.
 
-### Remaining 18 Failures — TODO
+### Additional fixes (2026-03-26)
+
+- **Postfix `++`/`--` in function args**: Added `$.postfix_expression` to function_call arg choices. Fixes `start--` and `seq++` as args.
+- **Top-level field/variable newlines**: Added `$._newline` to `_definition` for field/variable declarations. Fixes positional arg after boolean named arg.
+- **Operator-first continuations**: Scanner treats `+`, `*`, `/`, etc. at start of deeper-indented line as CONTINUATION not INDENT. Distinguishes `+` (binary) from `++` (prefix) by peeking one char.
+- **Chained block calls**: Added `$.block_function_call` to block inline body. Fixes `a: b: expr` pattern.
+
+### Remaining 12 Failures — TODO
 
 All remaining failures are independent "grind it out" issues, no architectural blockers.
 
 | # | Category | Files | Description | Difficulty |
 |---|----------|-------|-------------|------------|
-| 1 | Multi-line calls / continuation args | 5 | Args on continuation lines not properly bounded; blank lines don't terminate | Medium |
-| 2 | Chained/nested blocks (`: ... : ...`) | 3 | Nested `block_function_call` chains like `a: b: expr` | Medium |
-| 3 | Postfix `++`/`--` vs `--` named arg | 2 | `start--` parsed as named arg prefix, not postfix decrement | Easy |
-| 4 | Mixed same-line/continuation class clauses | 1 | `class Foo extends Bar\n    implements Baz:` | Easy-Medium |
-| 5 | Operator-first continuation (`+ expr`) | 1 | `ns_ = ns\n    + (us * ...)` | Medium |
-| 6 | Backslash line continuation `\` | 1 | Not implemented in scanner | Medium |
-| 7 | Empty set `{}` conflict | 1 | Conflict with `literal_map`; fix applied but file has other errors | Done |
-| 8 | Assignment in return (`return x = y`) | 1 | `return hash_ = expr`; fix applied but file has other errors | Done |
-| 9 | Positional arg after boolean named arg | 1 | `--flash "string"` — named arg ends the repeat | Easy |
-| 10 | Character arithmetic + block call | 1 | `ByteArray '~' - '-' + 1:` | Medium |
-| 11 | Abstract method consumed by prior expr | 1 | `abstract to-string -> string` swallowed by preceding call | Medium |
-| 12 | Chained block calls on same line | 1 | `return not bytes_.any: it != 0` | Medium |
+| 1 | Multi-line call scoping | 4 | Deeply nested continuation args don't terminate; swallow subsequent statements | Medium-Hard |
+| 2 | Nested block params | 3 | `--if-error=: expr` or `primitive: \| bytes \| expr` — blocks as named arg values | Medium |
+| 3 | Backslash line continuation `\` | 1 | Not implemented in scanner | Medium |
+| 4 | Character arithmetic + block call | 1 | `ByteArray '~' - '-' + 1:` | Medium |
+| 5 | `not` + block_function_call | 1 | `return not bytes_.any: it != 0` — `not` applies to expression, not block_function_call | Medium |
+| 6 | `:=` tokenization in nested blocks | 1 | `:` consumed as block start instead of part of `:=` | Medium |
 
-**Files affected per category:**
-- **#1**: buffer.toit, bytes.toit, hex.toit, remote.toit, coap/message.toit
-- **#2**: task.toit, rpc.toit, adler32.toit
-- **#3**: byte-order.toit, tls/session.toit
-- **#4**: esp32/net/ethernet.toit
-- **#5**: core/time.toit
-- **#6**: bitmap.toit
-- **#7**: net/modules/dns.toit (fix applied, other errors remain)
-- **#8**: uuid.toit (fix applied, other errors remain)
-- **#9**: system/system.toit
-- **#10**: encoding/url.toit
-- **#11**: core/numbers.toit
-- **#12**: uuid.toit (secondary error)
+**Files affected:**
+- **#1**: buffer.toit, bytes.toit, hex.toit, ethernet.toit
+- **#2**: numbers.toit, rpc.toit, adler32.toit
+- **#3**: bitmap.toit
+- **#4**: encoding/url.toit
+- **#5**: uuid.toit
+- **#6**: net/modules/dns.toit
+
+Note: remote.toit failure is in category #1 (function call with constructor + subscript on continuation line).
