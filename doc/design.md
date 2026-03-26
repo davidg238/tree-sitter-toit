@@ -79,26 +79,23 @@ The biggest single improvement came from removing the post-DEDENT NEWLINE in the
 - **Top-level field/variable newlines**: Added `$._newline` to `_definition` for field/variable declarations. Fixes positional arg after boolean named arg.
 - **Operator-first continuations**: Scanner treats `+`, `*`, `/`, etc. at start of deeper-indented line as CONTINUATION not INDENT. Distinguishes `+` (binary) from `++` (prefix) by peeking one char.
 - **Chained block calls**: Added `$.block_function_call` to block inline body. Fixes `a: b: expr` pattern.
+- **Backslash line continuation**: Scanner handles `\` + newline by emitting CONTINUATION. Fixes bitmap.toit.
 
-### Remaining 12 Failures — TODO
-
-All remaining failures are independent "grind it out" issues, no architectural blockers.
+### Remaining 11 Failures — TODO
 
 | # | Category | Files | Description | Difficulty |
 |---|----------|-------|-------------|------------|
-| 1 | Multi-line call scoping | 4 | Deeply nested continuation args don't terminate; swallow subsequent statements | Medium-Hard |
+| 1 | GLR explosion: 3+ multi-line calls | 4 | 3+ consecutive function calls each with `$._indent ... $._dedent` continuations causes combinatorial state explosion. 2 work, 3 fail. Needs restructuring of how function_call continuations interact with `repeat1($._statement)`. | Hard |
 | 2 | Nested block params | 3 | `--if-error=: expr` or `primitive: \| bytes \| expr` — blocks as named arg values | Medium |
-| 3 | Backslash line continuation `\` | 1 | Not implemented in scanner | Medium |
-| 4 | Character arithmetic + block call | 1 | `ByteArray '~' - '-' + 1:` | Medium |
-| 5 | `not` + block_function_call | 1 | `return not bytes_.any: it != 0` — `not` applies to expression, not block_function_call | Medium |
-| 6 | `:=` tokenization in nested blocks | 1 | `:` consumed as block start instead of part of `:=` | Medium |
+| 3 | Character arithmetic + block call | 1 | `ByteArray '~' - '-' + 1:` — function args include binary expression with char literals, ambiguous with multi-arg call | Hard |
+| 4 | `not` + block_function_call | 1 | `return not bytes_.any: it != 0` — `not` applies to `$._expression`, block_function_call is not `$._expression` | Medium |
+| 5 | `:=` tokenization in nested blocks | 1 | `:` consumed as block start instead of part of `:=` | Medium |
 
 **Files affected:**
-- **#1**: buffer.toit, bytes.toit, hex.toit, ethernet.toit
+- **#1**: buffer.toit, bytes.toit, hex.toit, ethernet.toit, remote.toit (5 files)
 - **#2**: numbers.toit, rpc.toit, adler32.toit
-- **#3**: bitmap.toit
-- **#4**: encoding/url.toit
-- **#5**: uuid.toit
-- **#6**: net/modules/dns.toit
+- **#3**: encoding/url.toit
+- **#4**: uuid.toit
+- **#5**: net/modules/dns.toit
 
-Note: remote.toit failure is in category #1 (function call with constructor + subscript on continuation line).
+**Key finding:** The 3+ multi-line call issue (#1) is the biggest remaining blocker. Two consecutive function calls with continuation-line named args parse fine, but three triggers GLR explosion. This is because each function_call's continuation block alternative (`$._indent ... $._dedent`) creates nested INDENT/DEDENT pairs within the outer block's `repeat1($._statement)`, leading to exponentially many possible partition strategies.
