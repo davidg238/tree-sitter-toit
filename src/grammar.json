@@ -3707,6 +3707,10 @@
               },
               {
                 "type": "SYMBOL",
+                "name": "block_function_call"
+              },
+              {
+                "type": "SYMBOL",
                 "name": "assignment"
               },
               {

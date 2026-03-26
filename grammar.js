@@ -688,6 +688,7 @@ module.exports = grammar({
           optional($._block_params),
           choice(
             prec.dynamic(1, $._expression),
+            $.block_function_call,
             $.assignment,
             $.return_statement,
             $.throw_statement,
