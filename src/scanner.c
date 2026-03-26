@@ -195,6 +195,24 @@ bool tree_sitter_toit_external_scanner_scan(void *payload, TSLexer *lexer, const
     } else if (lexer->lookahead == '\t') {
       indent_length += 8;
       skip(lexer);
+    } else if (lexer->lookahead == '\\') {
+      // Backslash line continuation: \ followed by newline joins lines.
+      // We need to peek ahead without committing if it's not a continuation.
+      skip(lexer);
+      if (lexer->lookahead == '\n' || lexer->lookahead == '\r') {
+        // It IS a continuation. Skip the newline and following whitespace,
+        // then emit CONTINUATION so tree-sitter commits the position advance.
+        skip(lexer);
+        if (lexer->lookahead == '\n') skip(lexer);
+        // Skip continuation line indentation
+        while (lexer->lookahead == ' ' || lexer->lookahead == '\t') skip(lexer);
+        lexer->mark_end(lexer);
+        lexer->result_symbol = CONTINUATION;
+        return true;
+      }
+      // Not a continuation — but we already consumed the backslash.
+      // Return false; tree-sitter will restore position.
+      break;
     } else if (lexer->lookahead == '/' && valid_symbols[INDENT]) {
         break;
     } else if (lexer->eof(lexer)) {
