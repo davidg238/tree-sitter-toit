@@ -59,7 +59,7 @@ In our Toit grammar, the external scanner is essential for effectively tracking 
 | 2026-03-13 | —           | 55/144        | 38%       |
 | 2026-03-14 | —           | 94/144        | 65%       |
 | 2026-03-16 | 105/~119    | 105/144       | 73%       |
-| 2026-03-26 | 85/~119     | 126→132/144   | 87.5→91.7%|
+| 2026-03-26 | 85/~119     | 133/144       | 92.4%     |
 
 ### Key Fix: else/else-if after indented blocks (2026-03-26)
 

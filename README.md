@@ -8,6 +8,7 @@ A [tree-sitter](https://tree-sitter.github.io/tree-sitter/) grammar for the [Toi
 
 | Date       | Success | Failed | Pass Rate |
 |------------|---------|--------|-----------|
+| 2026-03-26 | 133     | 11     | 92.4%     |
 | 2026-03-16 | 105     | 39     | 73%       |
 | 2026-03-14 | 94      | 50     | 65%       |
 | 2026-03-13 | 55      | 89     | 38%       |
@@ -17,43 +18,36 @@ Corpus tests: `test/corpus/` covers imports, variables, functions, classes, cont
 ## What Works
 
 - Import/export declarations
-- Class, interface, mixin, monitor definitions (with extends/implements/with)
+- Class, interface, mixin, monitor definitions (with extends/implements/with, including continuation lines)
 - Function definitions (params, return types, continuation-line params, constructors, operators, abstract, static)
 - Variable/field declarations (`:=`, `::=`, typed fields with `/Type`, nullable `?`)
 - Expressions (binary, unary, ternary, member access, subscript, slice)
 - String interpolation (`$name`, `$(expr)`, format specifiers)
-- Literals (numbers, chars, strings, triple strings, lists, maps, sets, byte arrays)
-- Block/lambda syntax (`:` and `::` blocks with params)
-- Control flow (if, while, for, try/finally, throw, return, break, continue)
-- Named arguments (`--name=value`, `--no-name`)
+- Literals (numbers, chars, strings, triple strings, lists, maps, sets, byte arrays, empty set `{}`)
+- Block/lambda syntax (`:` and `::` blocks with params, chained blocks `a: b: expr`)
+- Control flow (if/else/else-if, while, for, try/finally, throw, return, break, continue)
+- Named arguments (`--name=value`, `--no-name`), postfix `++`/`--` as function args
 - Block comments (`/* */`) and line comments (`//`)
 - Indentation-based scoping via external scanner
+- Operator-first continuation lines (`x\n    + y`)
+- Backslash line continuation (`\`)
+- Assignment in return statements (`return x = expr`)
 
-## Known Issues / TODOs
+## Known Issues / Remaining TODOs
 
-### High Priority
+### Hard
 
-1. **`else` / `else if` after indented blocks** — After an indented if-body, the scanner emits DEDENT then queues a NEWLINE. The grammar doesn't consume this NEWLINE before `else`, causing `else`/`else if` chains to fail. This is the single most impactful bug, affecting many files. Needs a solution that adds NEWLINE consumption between the body DEDENT and `else` without creating ambiguity with the `$._newline` in `_statement`.
+1. **GLR explosion: 3+ consecutive multi-line function calls** — Two consecutive function calls with continuation-line named args parse fine, but three triggers combinatorial state explosion. Each call's `$._indent ... $._dedent` continuation creates ambiguity with the outer block's `repeat1($._statement)`. Affects 5 files (buffer.toit, bytes.toit, hex.toit, ethernet.toit, remote.toit).
 
-2. **Multi-line ternary expressions** — Ternary `?`/`:` split across continuation lines (e.g., `reply := is-exception\n    ? [...]\n    : [...]`) are not parsed. The scanner emits CONTINUATION tokens for indented lines, but the ternary rule doesn't span across them.
+2. **Character arithmetic + block call** — `ByteArray '~' - '-' + 1:` — function args that are binary expressions with char literals are ambiguous with multi-arg calls. Affects url.toit.
 
-3. **Multi-line constructor/function calls with named args** — Calls like `Foo\n  --name=val\n  --count=3` inside function bodies fail. The continuation-line argument handling works for `function_definition` params but not for `function_call` args in all contexts.
+### Medium
 
-### Medium Priority
+3. **Nested block params in named args** — `--if-error=: expr` or `primitive: | bytes | expr` — blocks as named arg values with deep nesting. Affects 3 files (numbers.toit, rpc.toit, adler32.toit).
 
-4. **Chained comparisons** — `0 <= x < 10` parses as nested `binary_expression` instead of `chained_comparison`. The `chained_comparison` rule exists but has lower precedence than binary comparison operators.
+4. **`not` + block_function_call** — `return not list.any: it != 0` — `not` applies to `$._expression`, but `block_function_call` is not part of `$._expression`. Adding it causes GLR regressions elsewhere. Affects uuid.toit.
 
-5. **Return type `->` on continuation line** — `-> Type:` on its own indented line after params (e.g., in `spi.toit`) isn't always handled.
-
-6. **Variable initialized to block literal** — `replace-block := : | replacement |` (string.toit) — assigning a block literal directly to a variable.
-
-7. **Cascade failures** — Some files have a single early error that cascades into ERROR[0,0] wrapping the entire file. Better error recovery would help.
-
-### Low Priority / Edge Cases
-
-8. **`is not` operator** — Used as `is-not` in binary expressions, may need specific handling.
-9. **Primitive expressions in complex contexts** — `#primitive.core.xxx:` followed by complex block bodies.
-10. **Empty-body classes at top level** — `class Foo:\n` without a body sometimes fails depending on what follows.
+5. **`:=` tokenization in nested blocks** — `:` consumed as block start instead of part of `:=` in certain contexts. Affects dns.toit.
 
 ## Architecture
 
